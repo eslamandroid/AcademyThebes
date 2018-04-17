@@ -22,10 +22,19 @@ import java.util.ArrayList;
 
 
 public class Constants {
-    public static String LOGIN = "login";
-    public static String ADMIN = "admin";
-    public static String STUDENT = "student";
-    public static String TEACHER = "teacher";
+    public static final String LOGIN = "login";
+    public static final String ADMIN = "admin";
+    public static final String STUDENT = "student";
+    public static final String TEACHER = "teacher";
+    public static final String PROFILE = "profile";
+    public static final String TABLE_TYPE = "TableType";
+    public static final String LECTURES = "lectures";
+    public static final String SECTIONS = "sections";
+    public static final String EXAM = "exam";
+    public static final String MASTER = "master";
+    public static final String TYPE_FILE = "type_file";
+    public static final String UID = "uid";
+
 
 
     public static ArrayList<String> getEmptyField(Activity activity, EditText... id) {
@@ -74,8 +83,7 @@ public class Constants {
     }
 
 
-    public static void customDialogAlter(final Context context, int layoutResource, String msg, String titleButton, final ClickButton clickButton) {
-        final Dialog dialog = new Dialog(context);
+    public static void customDialogAlter(final Context context, Dialog dialog, int layoutResource, String msg, String titleButton, final ClickButton clickButton) {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(layoutResource);
         dialog.setCancelable(false);

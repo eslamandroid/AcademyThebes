@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -46,9 +47,9 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
     Button btn_register;
     CircleImageView selectImage;
     Spinner spinner;
-    EATextInputEditText fName, fEmail, fUserId, fPhone, fMaster, fSection;
+    EATextInputEditText fName, fEmail, fUserId, fPhone, fMaster, fSection, fUserCode;
     FirebaseAuth mAuth;
-    String sName, sEmail, sUserId, sPhone, sMaster, sSection;
+    String sName, sEmail, sUserId, sUserCode, sPhone, sMaster, sSection, type_account;
     StringBuilder msg;
     DatabaseReference userProfile;
     StorageReference mStorage;
@@ -71,6 +72,8 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         items.add("Admin");
         items.add("Teacher");
         mStorage = FirebaseStorage.getInstance().getReference();
+        userProfile = FirebaseDatabase.getInstance().getReference().child("Profile");
+
 
         initToolbar();
         init();
@@ -78,20 +81,6 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
     }
 
-    private void type(String type) {
-        switch (type) {
-            case "Student":
-                userProfile = FirebaseDatabase.getInstance().getReference().child("Student User");
-                break;
-            case "Admin":
-                userProfile = FirebaseDatabase.getInstance().getReference().child("Admin User");
-                break;
-            case "Teacher":
-                userProfile = FirebaseDatabase.getInstance().getReference().child("Teacher User");
-                break;
-        }
-
-    }
 
     private void init() {
         btn_register = findViewById(R.id.btn_register);
@@ -99,11 +88,23 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         fName = findViewById(R.id.nameField);
         fEmail = findViewById(R.id.emailField);
         fUserId = findViewById(R.id.userId_field);
+        fUserCode = findViewById(R.id.userCode_field);
         fPhone = findViewById(R.id.phone_field);
         fMaster = findViewById(R.id.master_field);
         fSection = findViewById(R.id.section_Field);
         spinner = findViewById(R.id.spinner);
         spinner.setAdapter(new ArrayAdapter<>(this, R.layout.text_spinner_type, items));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                type_account = spinner.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         fSection.setOnClickListener(this);
         fMaster.setOnClickListener(this);
@@ -123,24 +124,25 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
     private void createAccount() {
         if (hasEmpty()) {
-            type(items.get(spinner.getSelectedItemPosition()));
             mAuth.createUserWithEmailAndPassword(sEmail, sUserId).addOnSuccessListener(authResult -> {
                 UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(sUserId).build();
                 authResult.getUser().updateProfile(profileUpdates);
-                StorageReference filePath = mStorage.child("DonorProfile").child(resultUri.getLastPathSegment());
+                StorageReference filePath = mStorage.child("Profile").child(resultUri.getLastPathSegment());
                 filePath.putFile(resultUri).addOnSuccessListener(taskSnapshot -> {
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
                     if (!TextUtils.isEmpty(downloadUrl != null ? downloadUrl.toString() : null)) {
                         DatabaseReference container = userProfile.child(authResult.getUser().getUid());
                         profile = new Profile();
-                        profile.setUrl(downloadUrl.toString());
+                        profile.setImageUrl(downloadUrl.toString());
                         profile.setId(authResult.getUser().getUid());
                         profile.setName(sName);
                         profile.setEmail(sEmail);
                         profile.setUserId(sUserId);
                         profile.setPhone(sPhone);
                         profile.setMaster(sMaster);
+                        profile.setUserCode(sUserCode);
                         profile.setSection(sSection);
+                        profile.setType_account(type_account);
                         container.setValue(profile.addProfile());
                         if (spotsDialog.isShowing()) {
                             spotsDialog.dismiss();
@@ -174,18 +176,19 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         sName = fName.getText().toString();
         sEmail = fEmail.getText().toString();
         sUserId = fUserId.getText().toString();
+        sUserCode = fUserCode.getText().toString();
         sPhone = fPhone.getText().toString();
         sMaster = fMaster.getText().toString();
         sSection = fSection.getText().toString();
 
-        if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sEmail) && !TextUtils.isEmpty(sUserId) &&
+        if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sEmail) && !TextUtils.isEmpty(sUserId) && !TextUtils.isEmpty(sUserCode) &&
                 !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
                 !TextUtils.isEmpty(sSection)) {
             return true;
 
         } else {
-            ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sEmail, sUserId, sPhone, sMaster, sSection}
-                    , new String[]{"Name", "Email", "UserId", "Phone", "Master", "Section"});
+            ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sEmail, sUserId, sUserCode, sPhone, sMaster, sSection}
+                    , new String[]{"Name", "Email", "UserId", "UserCode", "Phone", "Master", "Section"});
             msg = new StringBuilder();
             for (int i = 0; i < arr.size(); i++) {
                 msg.append(arr.get(i)).append(" Is Empty Field\n");

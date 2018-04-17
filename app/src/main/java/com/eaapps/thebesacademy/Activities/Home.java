@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 
 import com.eaapps.thebesacademy.R;
+import com.eaapps.thebesacademy.Student.StudentHome;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class Home extends AppCompatActivity {
@@ -29,8 +30,14 @@ public class Home extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                Intent intent = new Intent(Home.this, Login.class);
-                startActivity(intent);
+                if (mAuth.getCurrentUser() != null) {
+                    mAuth.signOut();
+                    startActivity(new Intent(Home.this, Login.class));
+                } else {
+                    startActivity(new Intent(Home.this, StudentHome.class));
+
+                }
+
             }
         }.start();
 

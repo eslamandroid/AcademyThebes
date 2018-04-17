@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.eaapps.thebesacademy.Activities.EditProfile">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorMain"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="41dp"
+                tools:layout_editor_absoluteX="140dp"
+                tools:layout_editor_absoluteY="19dp">
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Edit Profile"
+                    android:textColor="@color/white"
+                    android:textSize="25dp" />
+            </RelativeLayout>
+        </android.support.v7.widget.Toolbar>
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/selectImage"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="25dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/circle_photo"
+            app:civ_border_color="@color/colorMain"
+            app:civ_border_width="2dp" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/nameField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/name"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/phone_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/phone"
+                android:inputType="phone"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/master_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                android:hint="@string/master"
+                android:inputType="text"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/section_Field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                android:hint="@string/section"
+                android:inputType="text"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/level_Field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                android:hint="@string/level"
+                android:inputType="text"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/semester_Field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                android:hint="@string/semester"
+                android:inputType="text"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

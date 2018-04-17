@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context="com.eaapps.thebesacademy.Material.RegisterMaterial">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@color/colorMain"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:titleTextColor="@color/white">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="41dp"
+            tools:layout_editor_absoluteX="140dp"
+            tools:layout_editor_absoluteY="19dp">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Add Tutorials"
+                android:textColor="@color/white"
+                android:textSize="25dp" />
+        </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/toolbar2"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/containerSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints">
+
+            <ImageView
+                android:id="@+id/iconSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/spinner"
+                android:layout_alignRight="@+id/spinner"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="34dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="30dp"
+                app:srcCompat="@drawable/down_arrow32"
+                tools:layout_editor_absoluteX="438dp"
+                tools:layout_editor_absoluteY="119dp" />
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="380dp"
+                android:layout_height="70dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/spinnershape"
+                android:gravity="center"
+                android:popupBackground="@drawable/spinner_down_shape"
+                android:spinnerMode="dropdown"
+                tools:ignore="MissingConstraints"
+                tools:layout_editor_absoluteX="170dp"
+                tools:layout_editor_absoluteY="45dp" />
+
+            <ImageView
+                android:id="@+id/lineSpinner"
+                android:layout_width="2dp"
+                android:layout_height="50dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="15dp"
+                android:layout_toLeftOf="@+id/iconSpinner"
+                android:layout_toStartOf="@+id/iconSpinner"
+                app:srcCompat="@color/colorMain"
+                tools:layout_editor_absoluteX="438dp"
+                tools:layout_editor_absoluteY="119dp" />
+
+        </RelativeLayout>
+
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ListView
+                android:id="@+id/recycleTutorialAdd"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:descendantFocusability="beforeDescendants"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/floatingActionButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="81dp"
+                android:layout_marginEnd="47dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/add32"
+                app:backgroundTint="@color/colorMain"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:ignore="MissingConstraints,RtlCompat" />
+
+
+        </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+
+
+</RelativeLayout>

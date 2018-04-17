@@ -16,8 +16,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_below="@+id/titleDialog"
-            android:background="@color/white"
-            />
+            android:background="@color/white" />
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"

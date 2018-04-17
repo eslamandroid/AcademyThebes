@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:background="@color/white">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/selector_minus"
+            android:text="Click Here To Delete Item"
+            android:textAllCaps="false"
+            android:id="@+id/deleteItem"
+            android:textColor="@color/white"
+            android:textSize="30sp"
+
+            />
+
+        <TextView
+            android:id="@+id/nameTeacher"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:drawableLeft="@drawable/teacherb32"
+            android:text="  Name Doctor: Ahmed Gamal"
+            android:textColor="@color/colorMain"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/nameMaterial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:drawableLeft="@drawable/folder32"
+            android:text="  Name Material: Databases"
+
+            android:textColor="@color/colorMain"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/nameDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:drawableLeft="@drawable/school_calendar32"
+            android:text="  Day: sunday"
+
+            android:textColor="@color/colorMain"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/nameTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:drawableLeft="@drawable/clock32"
+            android:text="  Time: 9.00 To 12.00"
+            android:textColor="@color/colorMain"
+            android:textSize="28sp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>
+

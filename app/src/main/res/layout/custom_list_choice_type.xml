@@ -20,7 +20,6 @@
             android:textColor="@color/colorMain"
             android:textSize="40sp"
             android:paddingLeft="10dp"
-            android:drawableLeft="@drawable/circle_shape"
-            />
+            android:drawableLeft="@drawable/circle_shape" />
     </LinearLayout>
 </LinearLayout>

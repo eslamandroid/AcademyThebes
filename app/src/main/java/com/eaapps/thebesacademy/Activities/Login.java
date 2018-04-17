@@ -10,18 +10,22 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.eaapps.thebesacademy.Model.Profile;
-import com.eaapps.thebesacademy.Model.RetrieveData;
 import com.eaapps.thebesacademy.R;
+import com.eaapps.thebesacademy.Student.StudentHome;
 import com.eaapps.thebesacademy.Utils.Constants;
 import com.eaapps.thebesacademy.Utils.EATextInputEditText;
+import com.eaapps.thebesacademy.Utils.RetrieveData;
 import com.eaapps.thebesacademy.Utils.StoreKey;
-import com.eaapps.thebesacademy.Utils.ThebesInterface;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import dmax.dialog.SpotsDialog;
 
 public class Login extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,22 +40,31 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     StringBuilder msg;
     StoreKey storeKey;
 
+    SpotsDialog spotsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         storeKey = new StoreKey(this);
         mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getCurrentUser() != null) {
-            startActivity(new Intent(Login.this, Constants.homeClasses(storeKey.getUser())));
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            startActivity(new Intent(Login.this, StudentHome.class));
+            //startActivity(new Intent(Login.this, Constants.homeClasses(storeKey.getUser())));
         }
+
         setContentView(R.layout.activity_login);
+        spotsDialog = new SpotsDialog(this, R.style.Custom);
         items.add("Student");
         items.add("Admin");
         items.add("Teacher");
         init();
         retrieveData = new RetrieveData<Profile>(Login.this) {
         };
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("Profile");
+
+
     }
 
     private void init() {
@@ -70,38 +83,33 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+
             case R.id.btn_login:
-                type(items.get(spinner.getSelectedItemPosition()));
                 if (hasEmpty()) {
-                    retrieveData.hasUser(Profile.class, databaseReference, new ThebesInterface.CallBackFindUser<Profile>() {
-                                @Override
-                                public void hasUser(Profile object) {
-                                    if (object != null) {
-                                        if (object.getUserId().equals(sUserId)) {
-                                            mAuth.signInWithEmailAndPassword(object.getEmail(), sUserId).addOnSuccessListener(authResult ->
-                                            {
-                                                storeKey.setUser(items.get(spinner.getSelectedItemPosition()));
+                    spotsDialog.show();
+                    Query query = databaseReference.orderByChild("userId").equalTo(sUserId);
+                    retrieveData.hasChild(Profile.class, query, object -> {
+                        if (object != null) {
+                            String email = object.getEmail();
+                            System.out.println("email: " + email);
+                            mAuth.signInWithEmailAndPassword(email, sUserId).addOnSuccessListener(authResult -> {
+                                storeKey.setUser(items.get(spinner.getSelectedItemPosition()));
 
-                                                startActivity(new Intent(Login.this,
-                                                        Constants.homeClasses(items.get(spinner.getSelectedItemPosition()))));
+                                //  startActivity(new Intent(Login.this,
+                                //         Constants.homeClasses(items.get(spinner.getSelectedItemPosition()))));
 
-                                            }).addOnFailureListener(e -> e.printStackTrace());
+                                spotsDialog.dismiss();
+                                startActivity(new Intent(Login.this, StudentHome.class));
 
-                                        }
-                                    }
-                                }
+                            }).addOnFailureListener(e -> e.printStackTrace());
 
-                                @Override
-                                public void hasUser(boolean f) {
-                                    if (!f) {
-                                        Constants.customDialogAlter(Login.this, R.layout.custom_dialog2,
-                                                "This UserId Is Not Registered In The App Before.");
-                                    }
+                        } else {
+                            spotsDialog.dismiss();
+                            Constants.customDialogAlter(Login.this, R.layout.custom_dialog2,
+                                    "This UserId Is Not Registered In The App Before.");
+                        }
+                    });
 
-                                }
-                            }
-
-                    );
                 }
                 break;
             case R.id.btn_signUp:
@@ -111,20 +119,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
-    private void type(String type) {
-        switch (type) {
-            case "Student":
-                databaseReference = FirebaseDatabase.getInstance().getReference().child("Student User");
-                break;
-            case "Admin":
-                databaseReference = FirebaseDatabase.getInstance().getReference().child("Admin User");
-                break;
-            case "Teacher":
-                databaseReference = FirebaseDatabase.getInstance().getReference().child("Teacher User");
-                break;
-        }
-
-    }
 
     private boolean hasEmpty() {
         sUserId = userField.getText().toString();

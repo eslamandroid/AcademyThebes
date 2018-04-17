@@ -10,8 +10,8 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
-        android:layout_marginBottom="10dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:background="@color/colorMain"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
@@ -191,7 +191,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/userid"
-                android:inputType="textEmailAddress"
+                android:inputType="textPersonName"
+                android:textColor="@color/colorMain" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:textColorHint="@color/colorMain">
+
+            <com.eaapps.thebesacademy.Utils.EATextInputEditText
+                android:id="@+id/userCode_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/usercode"
+                android:inputType="textPersonName"
                 android:textColor="@color/colorMain" />
         </android.support.design.widget.TextInputLayout>
 
