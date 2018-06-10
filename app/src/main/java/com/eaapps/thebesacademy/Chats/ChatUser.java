@@ -33,9 +33,11 @@ public class ChatUser extends Fragment {
     ItemUserAdapter itemUserAdapter;
     List<ItemUser> itemUserList = new ArrayList<>();
     DatabaseReference UserInteractMe, profileData, messageData;
+
     RetrieveData<Messages> messagesRetrieveData;
     RetrieveData<Profile> profileRetrieveData;
     RetrieveData<Chat> chatRetrieveData;
+
     List<Profile> profile = new ArrayList<>();
     List<Messages> messages = new ArrayList<>();
 
@@ -76,11 +78,21 @@ public class ChatUser extends Fragment {
         messageData.keepSynced(true);
 
         profileRetrieveData = new RetrieveData<Profile>(getContext()) {
+            @Override
+            public boolean hasKey(Profile object, List<Profile> listRetrieve) {
+                for (Profile profile : listRetrieve) {
+                    if (object.getId().equals(profile.getId())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         };
         messagesRetrieveData = new RetrieveData<Messages>(getContext()) {
         };
 
         chatRetrieveData = new RetrieveData<Chat>(getContext()) {
+
         };
 
 
@@ -91,29 +103,38 @@ public class ChatUser extends Fragment {
     @Override
     public void onStart() {
 
+
         chatRetrieveData.RetrieveList(Chat.class, UserInteractMe, new RetrieveData.CallBackRetrieveList<Chat>() {
+
             @Override
-            public void onDataList(List<Chat> object, String key) {
+            public void onDataList(List<Chat> object, int countChild) {
                 Chat conv = object.get(0);
                 if (conv != null) {
+
+
                     profileRetrieveData.RetrieveSingleTimes(Profile.class, profileData.child(conv.getId()), new RetrieveData.CallBackRetrieveTimes<Profile>() {
                         @Override
                         public void onData(Profile objects) {
                             if (objects != null) {
                                 Query queryMessage = messageData.child(objects.getId()).limitToLast(1);
+
                                 messagesRetrieveData.RetrieveList(Messages.class, queryMessage, new RetrieveData.CallBackRetrieveList<Messages>() {
+
+
                                     @Override
-                                    public void onDataList(List<Messages> object, String key) {
+                                    public void onDataList(List<Messages> object, int countChild) {
                                         Messages messages = object.get(0);
-                                        if (messages != null) {
-                                            System.out.println("idKey: " + key);
-                                            itemUserList.add(new ItemUser(objects, messages));
-                                            itemUserAdapter.notifyDataSetChanged();
+                                        if (!profileRetrieveData.hasKey(objects, profile)) {
+                                            if (messages != null) {
+                                                itemUserList.add(new ItemUser(objects, messages));
+                                                profile.add(objects);
+                                                itemUserAdapter.notifyDataSetChanged();
+                                            }
                                         }
                                     }
 
                                     @Override
-                                    public void onChangeList(List<Messages> object, int position) {
+                                    public void onChangeList(List<Messages> object1, int position) {
 
                                     }
 
@@ -121,11 +142,33 @@ public class ChatUser extends Fragment {
                                     public void onRemoveFromList(int removePosition) {
 
                                     }
+
+                                    @Override
+                                    public void exits(boolean e) {
+
+                                    }
+
+                                    @Override
+                                    public void hasChildren(boolean c) {
+
+                                    }
                                 });
 
                             }
                         }
+
+                        @Override
+                        public void hasChildren(boolean c) {
+
+                        }
+
+                        @Override
+                        public void exits(boolean e) {
+
+                        }
                     });
+
+
                 }
             }
 
@@ -136,6 +179,16 @@ public class ChatUser extends Fragment {
 
             @Override
             public void onRemoveFromList(int removePosition) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
 
             }
         });

@@ -41,10 +41,12 @@ public class ItemUserAdapter extends RecyclerView.Adapter<ItemUserAdapter.viewHo
     public void onBindViewHolder(viewHolder holder, int position) {
         ItemUser itemUser = itemUsers.get(position);
         Profile profile = itemUser.getProfile();
+
         if (profile != null) {
             holder.nameUser.setText(profile.getName());
             Picasso.with(context).load(profile.getImageUrl()).placeholder(R.drawable.default_avatar).into(holder.profileUser);
         }
+
         Messages messages = itemUser.getMessages();
         if (!key.equalsIgnoreCase("all") && messages != null) {
 
@@ -61,6 +63,7 @@ public class ItemUserAdapter extends RecyclerView.Adapter<ItemUserAdapter.viewHo
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ChatViewActivity.class);
             intent.putExtra(Constants.PROFILE, profile);
+            intent.putExtra("key","chat");
             context.startActivity(intent);
         });
 

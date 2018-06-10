@@ -84,17 +84,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Profile").child(from_user);
 
-        retrieveDataProfile.RetrieveSingleTimes(Profile.class, mUserDatabase, objects -> {
-            //  viewHolder.displayName.setText(objects.getName());
+        retrieveDataProfile.RetrieveSingleTimes(Profile.class, mUserDatabase, new RetrieveData.CallBackRetrieveTimes<Profile>() {
+            @Override
+            public void onData(Profile objects) {
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
+                String formattedDate = dateFormat.format(time);
+                viewHolder.time_text_layout.setText(formattedDate);
+                Picasso.with(viewHolder.profileImage.getContext()).load(objects.getImageUrl())
+                        .placeholder(R.drawable.default_avatar).into(viewHolder.profileImage);
+            }
 
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
-            String formattedDate = dateFormat.format(time);
-            viewHolder.time_text_layout.setText(formattedDate);
-            Picasso.with(viewHolder.profileImage.getContext()).load(objects.getImageUrl())
-                    .placeholder(R.drawable.default_avatar).into(viewHolder.profileImage);
+            @Override
+            public void hasChildren(boolean c) {
 
+            }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
         });
-
 
         if (from_user.equals(mCurrentUserId)) {
             viewHolder.read_msg.setVisibility(View.INVISIBLE);

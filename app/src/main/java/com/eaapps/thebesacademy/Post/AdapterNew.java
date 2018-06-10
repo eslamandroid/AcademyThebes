@@ -56,6 +56,8 @@ public class AdapterNew extends RecyclerView.Adapter<AdapterNew.viewHolder> {
         Post post = posts.get(position);
         if (TextUtils.isEmpty(post.getText())) {
             holder.nText.setVisibility(View.GONE);
+        } else {
+            holder.nText.setText(post.getText());
         }
 
         if (post.getUrl() != null) {

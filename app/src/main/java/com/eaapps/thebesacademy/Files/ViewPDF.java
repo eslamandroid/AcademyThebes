@@ -2,8 +2,8 @@ package com.eaapps.thebesacademy.Files;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -11,10 +11,10 @@ import com.eaapps.thebesacademy.R;
 
 public class ViewPDF extends AppCompatActivity {
 
-    private WebView webView;
-    Activity activity ;
-    private ProgressDialog progDailog;
+    Activity activity;
     String url;
+    private WebView webView;
+    private ProgressDialog progDailog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class ViewPDF extends AppCompatActivity {
 
 
         activity = this;
-        progDailog = ProgressDialog.show(activity, "Loading","Please wait...", true);
+        progDailog = ProgressDialog.show(activity, "Loading", "Please wait...", true);
         progDailog.setCancelable(false);
         webView = (WebView) findViewById(R.id.webview_compontent);
 
@@ -34,7 +34,7 @@ public class ViewPDF extends AppCompatActivity {
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
 //following lines are to show the loader untile downloading the pdf file for view.
-        webView.setWebViewClient(new WebViewClient(){
+        webView.setWebViewClient(new WebViewClient() {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -43,6 +43,7 @@ public class ViewPDF extends AppCompatActivity {
 
                 return true;
             }
+
             @Override
             public void onPageFinished(WebView view, final String url) {
                 progDailog.dismiss();
@@ -50,4 +51,5 @@ public class ViewPDF extends AppCompatActivity {
         });
 
         webView.loadUrl(url);   // webview loader to load the URL of file
-    }  }
+    }
+}

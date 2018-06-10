@@ -24,7 +24,8 @@ import com.eaapps.thebesacademy.Material.FirebaseModelTables;
 import com.eaapps.thebesacademy.Material.ModelTable;
 import com.eaapps.thebesacademy.Model.Profile;
 import com.eaapps.thebesacademy.R;
-import com.eaapps.thebesacademy.Student.StudentHome;
+import com.eaapps.thebesacademy.Teacher.HomeTeacher;
+import com.eaapps.thebesacademy.Utils.Constants;
 import com.eaapps.thebesacademy.Utils.RetrieveData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -110,12 +111,29 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
         profileRetrieveData = new RetrieveData<Profile>(AttendanceList.this) {
         };
 
-        profileRetrieveData.RetrieveSingleTimes(Profile.class, ref.child("Profile").child(uid), objects -> {
-            if (objects != null) {
-                nameTeacher = objects.getName();
-                spotsDialog.dismiss();
+
+        profileRetrieveData.RetrieveSingleTimes(Profile.class, ref.child("Profile").child(uid), new RetrieveData.CallBackRetrieveTimes<Profile>() {
+            @Override
+            public void onData(Profile objects) {
+                if (objects != null) {
+                    nameTeacher = objects.getName();
+                    spotsDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+                if (!e) {
+                    spotsDialog.dismiss();
+                }
             }
         });
+
 
         adapter = new RecyclerView.Adapter() {
             @Override
@@ -208,7 +226,7 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.btn_back);
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(AttendanceList.this, StudentHome.class));
+            startActivity(new Intent(AttendanceList.this, HomeTeacher.class));
         });
 
     }
@@ -245,7 +263,7 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
                 break;
             case R.id.spinner1:
                 material = spinner1.getItemAtPosition(i).toString();
-                getListAttendance();
+                getListAttendance(material);
                 break;
 
 
@@ -253,17 +271,22 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
 
     }
 
-    private void getListAttendance() {
+    private void getListAttendance(String m) {
         attendancesListFilter.clear();
-        attendancesRetrieveData.RetrieveList(Attendances.class, ref.child("Attendance").child("Computer Science").child("math2")
+        attendancesRetrieveData.RetrieveList(Attendances.class, ref.child("Attendance").child("Computer Science").child(m)
                 , new RetrieveData.CallBackRetrieveList<Attendances>() {
+
+
                     @Override
-                    public void onDataList(List<Attendances> object, String key) {
+                    public void onDataList(List<Attendances> object, int countChild) {
                         Attendances attendances = object.get(0);
                         if (attendances != null)
                             attendancesList.add(attendances);
                         attendancesListFilter.addAll(attendancesList);
                         adapter.notifyDataSetChanged();
+                        if (spotsDialog.isShowing()) {
+                            spotsDialog.dismiss();
+                        }
                     }
 
                     @Override
@@ -275,14 +298,29 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
                     public void onRemoveFromList(int removePosition) {
 
                     }
+
+                    @Override
+                    public void exits(boolean e) {
+
+                    }
+
+                    @Override
+                    public void hasChildren(boolean c) {
+                        if (!c) {
+                            spotsDialog.dismiss();
+                            Constants.customToast(AttendanceList.this, "not found any attandance this material");
+                        }
+
+                    }
                 });
+
     }
 
     private void getMaterial(String s) {
         materials.clear();
         modelTableRetrieveData.RetrieveList(FirebaseModelTables.class, ref.child("Tables").child("Lecture").child(s), new RetrieveData.CallBackRetrieveList<FirebaseModelTables>() {
             @Override
-            public void onDataList(List<FirebaseModelTables> object, String key) {
+            public void onDataList(List<FirebaseModelTables> object, int countChild) {
                 FirebaseModelTables firebaseModelTables = object.get(0);
                 if (firebaseModelTables != null) {
                     for (ModelTable t : firebaseModelTables.getTablesDetails()) {
@@ -299,7 +337,6 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
                 if (!hasFind) {
                     spotsDialog.dismiss();
                 }
-
             }
 
             @Override
@@ -309,6 +346,22 @@ public class AttendanceList extends AppCompatActivity implements CalendarDatePic
 
             @Override
             public void onRemoveFromList(int removePosition) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+                if (!e) {
+                    spotsDialog.dismiss();
+                    Constants.customToast(AttendanceList.this, "not found");
+
+
+                }
+
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
 
             }
         });

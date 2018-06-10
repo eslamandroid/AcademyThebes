@@ -140,16 +140,27 @@ public class RegisterMaterial extends AppCompatActivity implements MaterialInter
 
     private void getMaterial() {
         spotsDialog.show();
-        modelMaterialsRetrieveData.RetrieveSingleTimesRepeat(ModelMaterials.class, refMaterial.child(sections), objects -> {
-            if (objects != null) {
-                models.add(new MaterialModel("tutorial", objects.getText()));
-                itemFirebase.add(new MaterialModel("tutorial", objects.getText()));
-                adapterTutorial.notifyDataSetChanged();
-                spotsDialog.dismiss();
+        modelMaterialsRetrieveData.RetrieveSingleTimesRepeat(ModelMaterials.class, refMaterial.child(sections), new RetrieveData.CallBackRetrieveTimes<ModelMaterials>() {
+            @Override
+            public void onData(ModelMaterials objects) {
+                if (objects != null) {
+                    models.add(new MaterialModel("tutorial", objects.getText()));
+                    itemFirebase.add(new MaterialModel("tutorial", objects.getText()));
+                    adapterTutorial.notifyDataSetChanged();
+                    spotsDialog.dismiss();
+                }
             }
 
-        });
+            @Override
+            public void hasChildren(boolean c) {
 
+            }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
+        });
     }
 
     @Override

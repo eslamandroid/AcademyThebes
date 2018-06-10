@@ -1,8 +1,12 @@
 package com.eaapps.thebesacademy.Teacher;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -73,9 +77,24 @@ public class BrowserFile extends AppCompatActivity {
             }
         };
         recyleFile.setAdapter(adapter);
+
+        if (ActivityCompat.checkSelfPermission(BrowserFile.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions(BrowserFile.this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                    50);
+            return;
+        }
         root = new File(Environment.getExternalStorageDirectory()
                 .getAbsolutePath());
         getfile(root);
+
 
     }
 
@@ -116,6 +135,21 @@ public class BrowserFile extends AppCompatActivity {
         return fileList;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 50:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Start your camera handling here
+                    root = new File(Environment.getExternalStorageDirectory()
+                            .getAbsolutePath());
+                    getfile(root);
+                } else {
+                    Constants.customToast(BrowserFile.this, "Please allow the permission So the app works successfully");
+                }
+        }
+    }
 
     @Override
     public void onBackPressed() {

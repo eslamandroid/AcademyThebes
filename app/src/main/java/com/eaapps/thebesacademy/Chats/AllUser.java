@@ -22,16 +22,20 @@ import com.google.firebase.database.Query;
 import java.util.ArrayList;
 import java.util.List;
 
+import dmax.dialog.SpotsDialog;
+
 public class AllUser extends Fragment {
 
 
+    static String master;
     List<ItemUser> itemUserList = new ArrayList<>();
     ItemUserAdapter itemUserAdapter;
-
     RetrieveData<Profile> profileRetrieveData;
     DatabaseReference profileData;
-    String uid, master, level;
+    String uid, level, type_account;
     FirebaseAuth mAuth;
+    SpotsDialog spotsDialog;
+
 
     public AllUser() {
     }
@@ -58,42 +62,83 @@ public class AllUser extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_all_user, container, false);
+        spotsDialog = new SpotsDialog(getContext(), R.style.Custom);
+        // spotsDialog.show();
+
+
         RecyclerView recyclerUsers = view.findViewById(R.id.recyclerUsers);
         recyclerUsers.setHasFixedSize(false);
         recyclerUsers.setLayoutManager(new LinearLayoutManager(getContext()));
         itemUserAdapter = new ItemUserAdapter(getContext(), itemUserList, "all", uid);
         recyclerUsers.setAdapter(itemUserAdapter);
 
-        profileRetrieveData.RetrieveSingleTimes(Profile.class, profileData.child(uid), objects -> {
-            if (objects != null) {
-                master = objects.getMaster();
-                level = objects.getLevel();
-            }
-        });
 
-        Query query = profileData.orderByChild("master").equalTo(master);
-        profileRetrieveData.RetrieveList(Profile.class, query, new RetrieveData.CallBackRetrieveList<Profile>() {
+        profileRetrieveData.RetrieveSingleTimes(Profile.class, profileData.child(uid), new RetrieveData.CallBackRetrieveTimes<Profile>() {
             @Override
-            public void onDataList(List<Profile> object, String key) {
-                Profile profile = object.get(0);
-                if (profile != null) {
-                    if (profile.getLevel().equalsIgnoreCase(level)) {
-                        itemUserList.add(new ItemUser(profile, null));
-                        itemUserAdapter.notifyDataSetChanged();
-                    }
+            public void onData(Profile objects) {
+                if (objects != null) {
+                    master = objects.getMaster();
+                    System.out.println(master);
+                    level = objects.getLevel();
+                    type_account = objects.getType_account();
+                    // spotsDialog.dismiss();
+
+                    Query query = FirebaseDatabase.getInstance().getReference()
+                            .child("Profile").orderByChild("master").equalTo(master);
+
+                    profileRetrieveData.RetrieveList(Profile.class, query, new RetrieveData.CallBackRetrieveList<Profile>() {
+                        @Override
+                        public void onDataList(List<Profile> object, int countChild) {
+                            Profile profile = object.get(0);
+                            if (profile != null) {
+                                if (type_account != null && type_account.equalsIgnoreCase("Doctor")) {
+
+                                    itemUserList.add(new ItemUser(profile, null));
+                                    itemUserAdapter.notifyDataSetChanged();
+                                } else {
+                                    // if (profile.getLevel().equalsIgnoreCase(level)) {
+                                    itemUserList.add(new ItemUser(profile, null));
+                                    itemUserAdapter.notifyDataSetChanged();
+                                    // }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onChangeList(List<Profile> object, int position) {
+
+                        }
+
+                        @Override
+                        public void onRemoveFromList(int removePosition) {
+
+                        }
+
+                        @Override
+                        public void exits(boolean e) {
+
+                        }
+
+                        @Override
+                        public void hasChildren(boolean c) {
+
+                        }
+                    });
+
                 }
             }
 
             @Override
-            public void onChangeList(List<Profile> object, int position) {
+            public void hasChildren(boolean c) {
 
             }
 
             @Override
-            public void onRemoveFromList(int removePosition) {
+            public void exits(boolean e) {
 
             }
         });
+
 
         return view;
     }

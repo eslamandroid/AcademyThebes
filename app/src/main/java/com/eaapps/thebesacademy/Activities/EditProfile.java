@@ -25,9 +25,11 @@ import android.widget.Toast;
 import com.eaapps.thebesacademy.Model.Profile;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Student.StudentHome;
+import com.eaapps.thebesacademy.Teacher.HomeTeacher;
 import com.eaapps.thebesacademy.Utils.Constants;
 import com.eaapps.thebesacademy.Utils.EATextInputEditText;
 import com.eaapps.thebesacademy.Utils.RetrieveData;
+import com.eaapps.thebesacademy.Utils.StoreKey;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -54,10 +56,12 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
     DatabaseReference ref;
     RetrieveData<Profile> profileRetrieveData;
     FirebaseAuth mAuth;
+    StoreKey storeKey;
     boolean editPhoto = false;
     Uri resultUri;
     StringBuilder msg;
     StorageReference refStorage;
+    boolean isDoctor = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +72,7 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_edit_profile);
         spotsDialog = new SpotsDialog(this, R.style.Custom);
         spotsDialog.show();
+        storeKey = new StoreKey(this);
 
         initToolbar();
 
@@ -89,39 +94,63 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         fSection.setOnClickListener(this);
         fLevel.setOnClickListener(this);
         fSemester.setOnClickListener(this);
-
-        profileRetrieveData.RetrieveSingleTimes(Profile.class, ref.child(uid), objects -> {
-
-            if (objects != null) {
-                sName = objects.getName();
-                fName.setText(sName);
-
-                sPhone = objects.getPhone();
-                fPhone.setText(sPhone);
+        selectImage.setOnClickListener(this);
 
 
-                sMaster = objects.getMaster();
-                fMaster.setText(sMaster);
+        profileRetrieveData.RetrieveSingleTimes(Profile.class, ref.child(uid), new RetrieveData.CallBackRetrieveTimes<Profile>() {
+            @Override
+            public void onData(Profile objects) {
+                if (objects != null) {
+                    sName = objects.getName();
+                    fName.setText(sName);
+
+                    sPhone = objects.getPhone();
+                    fPhone.setText(sPhone);
 
 
-                sSection = objects.getSection();
-                fSection.setText(sSection);
-                Picasso.with(this).load(objects.getImageUrl()).placeholder(R.drawable.user256).into(selectImage);
+                    sMaster = objects.getMaster();
+                    fMaster.setText(sMaster);
+                    if (objects.getType_account().equalsIgnoreCase("doctor")) {
+                        fSemester.setVisibility(View.GONE);
+                        fLevel.setVisibility(View.GONE);
+                        isDoctor = true;
+                    }
 
-                if (objects.getLevel() != null && objects.getSemester() != null) {
+                    sSection = objects.getSection();
+                    fSection.setText(sSection);
 
-                    sLevel = objects.getLevel();
-                    fLevel.setText(sLevel);
+                    if (objects.getImageUrl() != null) {
+                        Picasso.with(EditProfile.this).load(objects.getImageUrl()).placeholder(R.drawable.user256).into(selectImage);
+                    }
 
-                    sSemester = objects.getSemester();
-                    fSemester.setText(sSemester);
+                    if (objects.getLevel() != null && objects.getSemester() != null) {
+
+                        sLevel = objects.getLevel();
+                        fLevel.setText(sLevel);
+
+                        sSemester = objects.getSemester();
+                        fSemester.setText(sSemester);
+
+                    }
+                    spotsDialog.dismiss();
 
                 }
-                spotsDialog.dismiss();
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
 
             }
 
+            @Override
+            public void exits(boolean e) {
+
+                if (!e) {
+                    spotsDialog.dismiss();
+                }
+            }
         });
+        
 
     }
 
@@ -133,8 +162,13 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         toolbar.inflateMenu(R.menu.menu_add_material);
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setNavigationOnClickListener(v -> {
-            Intent intent = new Intent(EditProfile.this, StudentHome.class);
-            startActivity(intent);
+            if (storeKey.getUser().equalsIgnoreCase("Doctor")) {
+                startActivity(new Intent(EditProfile.this, HomeTeacher.class));
+
+            } else {
+                startActivity(new Intent(EditProfile.this, StudentHome.class));
+
+            }
         });
 
         toolbar.setOnMenuItemClickListener(item -> {
@@ -168,9 +202,13 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
             profile.setPhone(sPhone);
             profile.setSection(sSection);
             profile.setMaster(sMaster);
+
             profile.setSection(sSection);
-            profile.setLevel(sLevel);
-            profile.setSemester(sSemester);
+            if (!isDoctor) {
+                profile.setLevel(sLevel);
+                profile.setSemester(sSemester);
+            }
+
             if (!TextUtils.isEmpty(url)) {
                 profile.setImageUrl(url);
             }
@@ -316,21 +354,40 @@ public class EditProfile extends AppCompatActivity implements View.OnClickListen
         sMaster = fMaster.getText().toString();
         sSection = fSection.getText().toString();
 
-        if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sLevel) && !TextUtils.isEmpty(sSemester) &&
-                !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
-                !TextUtils.isEmpty(sSection)) {
-            return true;
+        if (storeKey.getUser().equalsIgnoreCase("Doctor")) {
+            if (!TextUtils.isEmpty(sName) &&
+                    !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
+                    !TextUtils.isEmpty(sSection)) {
+                return true;
 
-        } else {
-            ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sLevel, sSemester, sPhone, sMaster, sSection}
-                    , new String[]{"Name", "Level", "Semester", "Phone", "Master", "Section"});
-            msg = new StringBuilder();
-            for (int i = 0; i < arr.size(); i++) {
-                msg.append(arr.get(i)).append(" Is Empty Field\n");
+            } else {
+                ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sPhone, sMaster, sSection}
+                        , new String[]{"Name", "Phone", "Master", "Section"});
+                msg = new StringBuilder();
+                for (int i = 0; i < arr.size(); i++) {
+                    msg.append(arr.get(i)).append(" Is Empty Field\n");
+                }
+                Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+
             }
-            Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+        } else {
+            if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sLevel) && !TextUtils.isEmpty(sSemester) &&
+                    !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
+                    !TextUtils.isEmpty(sSection)) {
+                return true;
 
+            } else {
+                ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sLevel, sSemester, sPhone, sMaster, sSection}
+                        , new String[]{"Name", "Level", "Semester", "Phone", "Master", "Section"});
+                msg = new StringBuilder();
+                for (int i = 0; i < arr.size(); i++) {
+                    msg.append(arr.get(i)).append(" Is Empty Field\n");
+                }
+                Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+
+            }
         }
+
         return false;
     }
 

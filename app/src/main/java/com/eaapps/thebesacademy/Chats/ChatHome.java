@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Student.StudentHome;
+import com.eaapps.thebesacademy.Teacher.HomeTeacher;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -25,6 +26,8 @@ public class ChatHome extends AppCompatActivity {
 
     FirebaseAuth mAuth;
     String uid;
+    Bundle bundle;
+    String key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +36,13 @@ public class ChatHome extends AppCompatActivity {
         FirebaseUser user = mAuth.getCurrentUser();
         uid = user != null ? user.getUid() : null;
         setContentView(R.layout.activity_chat_home);
+
+        bundle = getIntent().getExtras();
+        if(bundle!=null)
+        key = bundle.getString("key");
+
         initToolbar();
+
 
         tabLayout = findViewById(R.id.tabChat);
         viewPager = findViewById(R.id.viewChat);
@@ -51,7 +60,15 @@ public class ChatHome extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.btn_back);
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(ChatHome.this, StudentHome.class));
+
+            if (key.equalsIgnoreCase("doctor")) {
+
+                startActivity(new Intent(ChatHome.this, HomeTeacher.class));
+
+            } else {
+                startActivity(new Intent(ChatHome.this, StudentHome.class));
+            }
+
         });
     }
 

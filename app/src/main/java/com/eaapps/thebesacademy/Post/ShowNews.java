@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Display;
 
+import com.eaapps.thebesacademy.Admin.AdminHome;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Student.StudentHome;
 import com.eaapps.thebesacademy.Utils.RetrieveData;
@@ -29,6 +30,8 @@ public class ShowNews extends AppCompatActivity {
     RetrieveData<Post> postRetrieveData;
     DatabaseReference dataPost;
     FirebaseAuth mAuth;
+    Bundle bundle;
+    String key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +40,17 @@ public class ShowNews extends AppCompatActivity {
         uid = mAuth.getCurrentUser().getUid();
         setContentView(R.layout.activity_show_news);
 
+        bundle = getIntent().getExtras();
+        if (bundle != null) {
+            key = bundle.getString("key");
+        }
+
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
-        int sst=width-20;
+        int sst = width - 20;
 
         initToolbar();
         dataPost = FirebaseDatabase.getInstance().getReference().child("News");
@@ -50,7 +58,7 @@ public class ShowNews extends AppCompatActivity {
         rcNews = findViewById(R.id.recycleNews);
         rcNews.setHasFixedSize(false);
         rcNews.setLayoutManager(new LinearLayoutManager(this));
-        adapterNew = new AdapterNew(ShowNews.this, postList, uid,width);
+        adapterNew = new AdapterNew(ShowNews.this, postList, uid, width);
         rcNews.setAdapter(adapterNew);
 
         postRetrieveData = new RetrieveData<Post>(ShowNews.this) {
@@ -66,8 +74,9 @@ public class ShowNews extends AppCompatActivity {
         };
 
         postRetrieveData.RetrieveList(Post.class, dataPost, new RetrieveData.CallBackRetrieveList<Post>() {
+
             @Override
-            public void onDataList(List<Post> object, String key) {
+            public void onDataList(List<Post> object, int countChild) {
                 Post post = object.get(0);
                 if (post != null && !postRetrieveData.hasKey(post, postList)) {
                     postList.add(post);
@@ -84,6 +93,16 @@ public class ShowNews extends AppCompatActivity {
             public void onRemoveFromList(int removePosition) {
 
             }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
+
+            }
         });
 
 
@@ -94,7 +113,12 @@ public class ShowNews extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.btn_back);
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(ShowNews.this, StudentHome.class));
+            if (key.equalsIgnoreCase("admin")) {
+                startActivity(new Intent(ShowNews.this, AdminHome.class));
+            } else {
+                startActivity(new Intent(ShowNews.this, StudentHome.class));
+
+            }
         });
     }
 

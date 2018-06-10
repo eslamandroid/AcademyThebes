@@ -1,6 +1,7 @@
-package com.eaapps.thebesacademy.Teacher;
+package com.eaapps.thebesacademy.Student;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,22 +13,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.eaapps.thebesacademy.R;
-import com.eaapps.thebesacademy.Utils.Constants;
+import com.eaapps.thebesacademy.Teacher.Files;
 import com.eaapps.thebesacademy.Utils.RetrieveData;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -37,72 +32,57 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TeacherListFile extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+import dmax.dialog.SpotsDialog;
 
+public class FilesShow extends AppCompatActivity {
 
-    RecyclerView recycleDoctorFiles;
+    // Progress dialog type (0 - for Horizontal progress bar)
+    public static final int progress_bar_type = 0;
+    RecyclerView recycleFile;
     RecyclerView.Adapter adapter;
     List<Files> filesList = new ArrayList<>();
-    DatabaseReference ref;
-    Bundle bundle;
-    String myDoctor;
     RetrieveData<Files> filesRetrieveData;
-    String[] sectionArr = {"Computer Science", "Information Systems", "Accounting", "Business Administration"};
-    String[] levelArr = {"1", "2", "3", "4"};
-    String master, level;
-    Spinner sSection, sLevel;
-    ProgressDialog progressDialog;
-    FirebaseAuth mAuth;
+    DatabaseReference ref;
     String uid;
-
+    String master;
+    Bundle bundle;
+    SpotsDialog spotsDialog;
+    TextView textView;
+    // Progress Dialog
+    StorageReference storageRef;
+    private ProgressDialog pDialog, progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-
-
-        if (user != null) {
-            uid = user.getUid();
-        }
-
-        setContentView(R.layout.activity_teacher_list_file);
+        setContentView(R.layout.activity_files_show);
+        spotsDialog = new SpotsDialog(FilesShow.this, R.style.Custom);
+        spotsDialog.show();
         bundle = getIntent().getExtras();
         assert bundle != null;
-        myDoctor = bundle.getString(Constants.UID);
-        progressDialog = new ProgressDialog(this);
-
+        uid = bundle.getString("id");
+        master = bundle.getString("master");
         initToolbar();
 
-
-        sSection = findViewById(R.id.spinner);
-        sSection.setAdapter(new ArrayAdapter<>(this, R.layout.text_spinner_type, sectionArr));
-        sSection.setOnItemSelectedListener(this);
-
-        sLevel = findViewById(R.id.spinner1);
-        sLevel.setAdapter(new ArrayAdapter<>(this, R.layout.text_spinner_type, levelArr));
-        sLevel.setOnItemSelectedListener(this);
-
-        ref = FirebaseDatabase.getInstance().getReference().child("Files");
-        filesRetrieveData = new RetrieveData<Files>(TeacherListFile.this) {
+        progressDialog = new ProgressDialog(this);
+        ref = FirebaseDatabase.getInstance().getReference();
+        filesRetrieveData = new RetrieveData<Files>(FilesShow.this) {
         };
 
-        recycleDoctorFiles = findViewById(R.id.recycleFileDoctor);
-        recycleDoctorFiles.setHasFixedSize(false);
-        recycleDoctorFiles.setLayoutManager(new LinearLayoutManager(this));
-
+        textView = findViewById(R.id.textFind);
+        recycleFile = findViewById(R.id.recycleFile);
+        recycleFile.setHasFixedSize(false);
+        recycleFile.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecyclerView.Adapter() {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new RecyclerView.ViewHolder(LayoutInflater.from(TeacherListFile.this).inflate(R.layout.custom_list_files, parent, false)) {
+                return new RecyclerView.ViewHolder(LayoutInflater.from(FilesShow.this).inflate(R.layout.custom_list_files, parent, false)) {
                     @Override
                     public String toString() {
                         return super.toString();
                     }
                 };
             }
-
 
             @SuppressLint("SetTextI18n")
             @Override
@@ -120,12 +100,10 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
                 type_file.setText(files.getType_file());
 
                 downloadFile.setOnClickListener(v -> {
-
                     StorageReference httpsReference = FirebaseStorage.getInstance().getReferenceFromUrl(files.getUrl());
                     downloadToLocalFile(httpsReference, System.currentTimeMillis() + files.getType_file());
 
                 });
-
             }
 
             @Override
@@ -133,26 +111,28 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
                 return filesList.size();
             }
         };
-        recycleDoctorFiles.setAdapter(adapter);
+        recycleFile.setAdapter(adapter);
 
-    }
+        filesRetrieveData.RetrieveList(Files.class, ref.child("Files")
+                .child(master).child(uid), new RetrieveData.CallBackRetrieveList<Files>() {
 
-    @Override
-    public void onBackPressed() {
-
-    }
-
-    public void fill() {
-        Query query = ref.child(master).child(uid).orderByChild("level").equalTo(level);
-        filesRetrieveData.RetrieveList(Files.class, query, new RetrieveData.CallBackRetrieveList<Files>() {
 
             @Override
             public void onDataList(List<Files> object, int countChild) {
                 Files files = object.get(0);
                 if (files != null) {
-                    if (files.getLevel() != null && files.getLevel().equals(level))
-                        filesList.add(files);
+                    filesList.add(files);
                     adapter.notifyDataSetChanged();
+                    spotsDialog.dismiss();
+                } else {
+                    textView.setVisibility(View.VISIBLE);
+                    spotsDialog.dismiss();
+
+                }
+
+                if (filesList.size() > 0) {
+                    textView.setVisibility(View.GONE);
+                    spotsDialog.dismiss();
                 }
             }
 
@@ -168,36 +148,60 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
 
             @Override
             public void exits(boolean e) {
-
+                if(!e){
+                    textView.setVisibility(View.VISIBLE);
+                    spotsDialog.dismiss();
+                }else{
+                    textView.setVisibility(View.GONE);
+                    spotsDialog.dismiss();
+                }
             }
 
             @Override
             public void hasChildren(boolean c) {
-
+                if(!c){
+                    textView.setVisibility(View.VISIBLE);
+                    spotsDialog.dismiss();
+                }else{
+                    textView.setVisibility(View.GONE);
+                    spotsDialog.dismiss();
+                }
             }
         });
 
+
+    }
+
+
+    private void initToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar2);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.btn_back);
+        toolbar.setNavigationOnClickListener(v -> {
+            startActivity(new Intent(FilesShow.this, StudentHome.class).putExtra("master", master));
+        });
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int i, long id) {
-        switch (parent.getId()) {
-            case R.id.spinner:
-                filesList.clear();
-                master = sSection.getItemAtPosition(i).toString();
-                fill();
-                break;
-            case R.id.spinner1:
-                filesList.clear();
-                level = sLevel.getItemAtPosition(i).toString();
-                fill();
-                break;
+    public void onBackPressed() {
+
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        switch (id) {
+            case progress_bar_type:
+                pDialog = new ProgressDialog(this);
+                pDialog.setMessage("Downloading file. Please wait...");
+                pDialog.setIndeterminate(false);
+                pDialog.setMax(100);
+                pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                pDialog.setCancelable(true);
+                pDialog.show();
+                return pDialog;
+            default:
+                return null;
         }
-
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
 
     }
 
@@ -217,7 +221,7 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
                     public void onSuccess(byte[] bytes) {
 
                         storeFiles(nameFile, bytes);
-                        Toast.makeText(TeacherListFile.this, "ssssss", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(FilesShow.this, "ssssss", Toast.LENGTH_SHORT).show();
                         progressDialog.dismiss();
                     }
                 });
@@ -227,18 +231,10 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(TeacherListFile.this, "Upload file before downloading", Toast.LENGTH_LONG).show();
+            Toast.makeText(FilesShow.this, "Upload file before downloading", Toast.LENGTH_LONG).show();
         }
     }
 
-    private void initToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar2);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.btn_back);
-        toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(TeacherListFile.this, HomeTeacher.class));
-        });
-    }
 
     public void storeFiles(String nameFile, byte[] bytes) {
         File file, storage;
@@ -262,4 +258,6 @@ public class TeacherListFile extends AppCompatActivity implements AdapterView.On
         }
     }
 
+
 }
+

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.eaapps.thebesacademy.Activities.Login;
 import com.eaapps.thebesacademy.Material.AddTable;
 import com.eaapps.thebesacademy.Material.RegisterMaterial;
 import com.eaapps.thebesacademy.Post.AddPost;
@@ -18,6 +19,11 @@ import com.eaapps.thebesacademy.Post.ShowNews;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Student.ThebesTables;
 import com.eaapps.thebesacademy.Utils.Constants;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class AdminHome extends AppCompatActivity {
 
@@ -30,11 +36,25 @@ public class AdminHome extends AppCompatActivity {
             "Add Latest news",
             "Show Tables",
             "Show News"
+            , "Log Out"
     };
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            mAuth.signOut();
+            startActivity(new Intent(AdminHome.this, Login.class));
+        }
+
+        String toks = FirebaseInstanceId.getInstance().getToken();
+        DatabaseReference tok = FirebaseDatabase.getInstance().getReference()
+                .child("Token").child(user.getUid());
+        tok.child("token").setValue(toks);
+
         setContentView(R.layout.activity_admin_home);
         recycleAdmin = findViewById(R.id.recycleAdmin);
         recycleAdmin.setHasFixedSize(true);
@@ -88,7 +108,7 @@ public class AdminHome extends AppCompatActivity {
                             builder.setTitle("Select Master");
                             builder.setItems(sectionArr, (dialogInterface, i) -> {
                                 startActivity(new Intent(AdminHome.this, ThebesTables.class)
-                                        .putExtra(Constants.MASTER, sectionArr[i]));
+                                        .putExtra(Constants.MASTER, sectionArr[i]).putExtra("key", "admin"));
 
 
                             });
@@ -96,8 +116,14 @@ public class AdminHome extends AppCompatActivity {
                             builder.show();
 
                             break;
+
                         case 6:
-                            startActivity(new Intent(AdminHome.this, ShowNews.class));
+                            startActivity(new Intent(AdminHome.this, ShowNews.class).putExtra("key", "admin"));
+                            break;
+
+                        case 7:
+                            mAuth.signOut();
+                            startActivity(new Intent(AdminHome.this, Login.class));
                             break;
                     }
                 });

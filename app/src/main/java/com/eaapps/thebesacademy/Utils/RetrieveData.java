@@ -22,19 +22,32 @@ public abstract class RetrieveData<T> {
         listRetrieve = new ArrayList<>();
     }
 
-
     // Database Reference
     public void RetrieveList(final Class<T> tClass, DatabaseReference reference, final CallBackRetrieveList<T> callBackRetrieveList) {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                callBackRetrieveList.exits(dataSnapshot.exists());
+                callBackRetrieveList.hasChildren(dataSnapshot.hasChildren());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         reference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (dataSnapshot.hasChildren()) {
-                    T object = dataSnapshot.getValue(tClass);
-                    if (!hasKey(object, listRetrieve)) {
-                        listRetrieve.add(0, object);
-                        callBackRetrieveList.onDataList(listRetrieve, dataSnapshot.getKey());
-                    }
+                System.out.println("check: " + dataSnapshot.exists());
+                T object = dataSnapshot.getValue(tClass);
+                if (!hasKey(object, listRetrieve)) {
+                    listRetrieve.add(0, object);
+                    callBackRetrieveList.onDataList(listRetrieve, (int) dataSnapshot.getChildrenCount());
                 }
+
+
             }
 
             @Override
@@ -75,21 +88,32 @@ public abstract class RetrieveData<T> {
             }
         });
     }
-
 
     //Database Query
 
     public void RetrieveList(final Class<T> tClass, Query reference, final CallBackRetrieveList<T> callBackRetrieveList) {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                callBackRetrieveList.exits(dataSnapshot.exists());
+                callBackRetrieveList.hasChildren(dataSnapshot.hasChildren());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         reference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (dataSnapshot.hasChildren()) {
-                    T object = dataSnapshot.getValue(tClass);
-                    if (!hasKey(object, listRetrieve)) {
-                        listRetrieve.add(0, object);
-                        callBackRetrieveList.onDataList(listRetrieve, dataSnapshot.getKey());
-                    }
+                T object = dataSnapshot.getValue(tClass);
+                if (!hasKey(object, listRetrieve)) {
+                    listRetrieve.add(0, object);
+                    callBackRetrieveList.onDataList(listRetrieve, (int) dataSnapshot.getChildrenCount());
                 }
+
             }
 
             @Override
@@ -131,15 +155,16 @@ public abstract class RetrieveData<T> {
         });
     }
 
-
     //Database Reference
+
     public void RetrieveSingleTimes(final Class<T> tClass, DatabaseReference reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
+                callBackRetrieveTimes.exits(dataSnapshot.exists());
+                callBackRetrieveTimes.hasChildren(dataSnapshot.hasChildren());
+                if (dataSnapshot.exists()) {
                     T object = dataSnapshot.getValue(tClass);
-                    //error
                     callBackRetrieveTimes.onData(object);
                 }
             }
@@ -151,7 +176,6 @@ public abstract class RetrieveData<T> {
         });
 
     }
-
 
     //Database Query
 
@@ -159,9 +183,10 @@ public abstract class RetrieveData<T> {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
+                callBackRetrieveTimes.exits(dataSnapshot.exists());
+                callBackRetrieveTimes.hasChildren(dataSnapshot.hasChildren());
+                if (dataSnapshot.exists()) {
                     T object = dataSnapshot.getValue(tClass);
-                    //error
                     callBackRetrieveTimes.onData(object);
                 }
             }
@@ -173,49 +198,6 @@ public abstract class RetrieveData<T> {
         });
 
     }
-
-    public void RetrieveSingleTimesRepeat(final Class<T> tClass, DatabaseReference reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot data : dataSnapshot.getChildren()) {
-                        T object = data.getValue(tClass);
-                        callBackRetrieveTimes.onData(object);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    //Database Query
-
-    public void RetrieveSingleTimesRepeat(final Class<T> tClass, Query reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot data : dataSnapshot.getChildren()) {
-                        T object = data.getValue(tClass);
-                        callBackRetrieveTimes.onData(object);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
 
     //Database Reference
 
@@ -223,9 +205,16 @@ public abstract class RetrieveData<T> {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    T object = dataSnapshot.getValue(tClass);
-                    callBackRetrieveTimes.onData(object);
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.hasChildren()) {
+                        T object = dataSnapshot.getValue(tClass);
+                        callBackRetrieveTimes.onData(object);
+                    } else {
+                        callBackRetrieveTimes.hasChildren(false);
+
+                    }
+                } else {
+                    callBackRetrieveTimes.exits(false);
                 }
             }
 
@@ -243,9 +232,16 @@ public abstract class RetrieveData<T> {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    T object = dataSnapshot.getValue(tClass);
-                    callBackRetrieveTimes.onData(object);
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.hasChildren()) {
+                        T object = dataSnapshot.getValue(tClass);
+                        callBackRetrieveTimes.onData(object);
+                    } else {
+                        callBackRetrieveTimes.hasChildren(false);
+
+                    }
+                } else {
+                    callBackRetrieveTimes.exits(false);
                 }
             }
 
@@ -259,15 +255,23 @@ public abstract class RetrieveData<T> {
 
     //Database Reference
 
-    public void RetrieveEventTimesRepeat(final Class<T> tClass, DatabaseReference reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
+    public void RetrieveSingleTimesRepeat(final Class<T> tClass, DatabaseReference reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot data : dataSnapshot.getChildren()) {
-                        T object = data.getValue(tClass);
-                        callBackRetrieveTimes.onData(object);
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.hasChildren()) {
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+                            T object = data.getValue(tClass);
+                            callBackRetrieveTimes.onData(object);
+                        }
+                    } else {
+                        callBackRetrieveTimes.hasChildren(false);
+
                     }
+                } else {
+                    callBackRetrieveTimes.exits(false);
+
                 }
             }
 
@@ -281,15 +285,23 @@ public abstract class RetrieveData<T> {
 
     //Database Query
 
-    public void RetrieveEventTimesRepeat(final Class<T> tClass, Query reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
+    public void RetrieveSingleTimesRepeat(final Class<T> tClass, Query reference, final CallBackRetrieveTimes<T> callBackRetrieveTimes) {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    for (DataSnapshot data : dataSnapshot.getChildren()) {
-                        T object = data.getValue(tClass);
-                        callBackRetrieveTimes.onData(object);
+                if (dataSnapshot.exists()) {
+                    if (dataSnapshot.hasChildren()) {
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+                            T object = data.getValue(tClass);
+                            callBackRetrieveTimes.onData(object);
+                        }
+                    } else {
+                        callBackRetrieveTimes.hasChildren(false);
+
                     }
+                } else {
+                    callBackRetrieveTimes.exits(false);
+
                 }
             }
 
@@ -302,14 +314,11 @@ public abstract class RetrieveData<T> {
     }
 
 
-    public void haveChild(Class<T> tClass, DatabaseReference reference, String id, CallHaveChild<T> callHaveChild) {
+    public void haveChild(DatabaseReference reference, String id, CallHaveChild callHaveChild) {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                T object = dataSnapshot.getValue(tClass);
-                callHaveChild.hasChild(dataSnapshot.hasChild(id), object);
-
+                callHaveChild.hasChild(dataSnapshot.hasChild(id));
             }
 
             @Override
@@ -319,30 +328,32 @@ public abstract class RetrieveData<T> {
         });
     }
 
-    public void haveChild(Class<T> tClass, Query reference, String id, CallHaveChild<T> callHaveChild) {
+    public void hasChild(DatabaseReference reference, CallHaveChild callHaveChild) {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                T object = dataSnapshot.getValue(tClass);
-                callHaveChild.hasChild(dataSnapshot.hasChild(id), object);
-
+                if (dataSnapshot.exists()) {
+                    callHaveChild.hasChild(dataSnapshot.hasChildren());
+                } else {
+                    callHaveChild.hasChild(false);
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }
 
-    public void hasChild(Class<T> tClass, Query query, CallHasChild<T> callHasChild) {
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getCountChild(DatabaseReference reference, CallCountChild callCountChild) {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    T object = data.getValue(tClass);
-                    callHasChild.hasChild(object);
+                if (dataSnapshot.exists()) {
+                    callCountChild.count(dataSnapshot.getChildrenCount());
+                } else {
+                    callCountChild.count(0);
+
                 }
             }
 
@@ -361,23 +372,34 @@ public abstract class RetrieveData<T> {
         return 0;
     }
 
+
     public interface CallBackRetrieveList<T> {
-        void onDataList(List<T> object, String key);
+        void onDataList(List<T> object, int countChild);
 
         void onChangeList(List<T> object, int position);
 
         void onRemoveFromList(int removePosition);
+
+        void exits(boolean e);
+
+        void hasChildren(boolean c);
+
     }
 
     public interface CallBackRetrieveTimes<T> {
         void onData(T objects);
+
+        void hasChildren(boolean c);
+
+        void exits(boolean e);
+
     }
 
-    public interface CallHaveChild<T> {
-        void hasChild(boolean has, T object);
+    public interface CallHaveChild {
+        void hasChild(boolean has);
     }
 
-    public interface CallHasChild<T> {
-        void hasChild(T object);
+    public interface CallCountChild {
+        void count(long c);
     }
 }

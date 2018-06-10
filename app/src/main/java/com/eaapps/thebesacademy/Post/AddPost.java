@@ -17,9 +17,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.eaapps.thebesacademy.Admin.AdminHome;
+import com.eaapps.thebesacademy.Chats.Tokens;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Student.StudentHome;
 import com.eaapps.thebesacademy.Utils.Constants;
+import com.eaapps.thebesacademy.Utils.RetrieveData;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -45,6 +48,7 @@ public class AddPost extends AppCompatActivity {
     RecyclerView.Adapter adapter;
     List<Uri> uriList = new ArrayList<>();
     List<String> urlDownload = new ArrayList<>();
+    RetrieveData<Tokens> tokensRetrieveData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,8 @@ public class AddPost extends AppCompatActivity {
         setContentView(R.layout.activity_add_post);
 
         initToolbar();
+        tokensRetrieveData = new RetrieveData<Tokens>(AddPost.this) {
+        };
 
         spotsDialog = new SpotsDialog(this, R.style.Custom);
         editPost = findViewById(R.id.editPost);
@@ -211,7 +217,7 @@ public class AddPost extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.btn_back);
         toolbar.setNavigationOnClickListener(v -> {
 
-            startActivity(new Intent(AddPost.this, StudentHome.class));
+            startActivity(new Intent(AddPost.this, AdminHome.class));
 
         });
 

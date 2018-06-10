@@ -4,14 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,28 +25,25 @@ import com.eaapps.thebesacademy.Model.Profile;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Utils.Constants;
 import com.eaapps.thebesacademy.Utils.EATextInputEditText;
+import com.eaapps.thebesacademy.Utils.StoreKey;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
 public class SignUp extends AppCompatActivity implements View.OnClickListener {
     private static final int GALLERY_REQUEST = 1;
     static boolean isMaster = false;
     Button btn_register;
-    CircleImageView selectImage;
     Spinner spinner;
     EATextInputEditText fName, fEmail, fUserId, fPhone, fMaster, fSection, fUserCode;
+    TextInputLayout layId, layCode;
     FirebaseAuth mAuth;
     String sName, sEmail, sUserId, sUserCode, sPhone, sMaster, sSection, type_account;
     StringBuilder msg;
@@ -55,9 +51,10 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
     StorageReference mStorage;
     List<String> items = new ArrayList<>();
     Profile profile;
-    Uri resultUri;
-    boolean editPhoto = false;
     SpotsDialog spotsDialog;
+    StoreKey storeKey;
+    String password = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +66,20 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         setContentView(R.layout.activity_sign_up);
         spotsDialog = new SpotsDialog(this, R.style.Custom);
         items.add("Student");
-        items.add("Admin");
-        items.add("Teacher");
+        items.add("Doctor");
         mStorage = FirebaseStorage.getInstance().getReference();
         userProfile = FirebaseDatabase.getInstance().getReference().child("Profile");
-
-
+        storeKey = new StoreKey(this);
         initToolbar();
         init();
 
 
     }
 
-
     private void init() {
         btn_register = findViewById(R.id.btn_register);
-        selectImage = findViewById(R.id.selectImage);
+        layCode = findViewById(R.id.lay_userCode);
+        layId = findViewById(R.id.lay_userId);
         fName = findViewById(R.id.nameField);
         fEmail = findViewById(R.id.emailField);
         fUserId = findViewById(R.id.userId_field);
@@ -98,6 +93,17 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 type_account = spinner.getItemAtPosition(position).toString();
+                if (type_account.equalsIgnoreCase("Doctor")) {
+                    fUserCode.setVisibility(View.GONE);
+                    fUserId.setVisibility(View.GONE);
+                    layCode.setVisibility(View.GONE);
+                    layId.setVisibility(View.GONE);
+                } else {
+                    fUserCode.setVisibility(View.VISIBLE);
+                    fUserId.setVisibility(View.VISIBLE);
+                    layCode.setVisibility(View.VISIBLE);
+                    layId.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
@@ -109,7 +115,6 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         fSection.setOnClickListener(this);
         fMaster.setOnClickListener(this);
         btn_register.setOnClickListener(this);
-        selectImage.setOnClickListener(this);
     }
 
     private void initToolbar() {
@@ -124,49 +129,46 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
     private void createAccount() {
         if (hasEmpty()) {
-            mAuth.createUserWithEmailAndPassword(sEmail, sUserId).addOnSuccessListener(authResult -> {
-                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(sUserId).build();
-                authResult.getUser().updateProfile(profileUpdates);
-                StorageReference filePath = mStorage.child("Profile").child(resultUri.getLastPathSegment());
-                filePath.putFile(resultUri).addOnSuccessListener(taskSnapshot -> {
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    if (!TextUtils.isEmpty(downloadUrl != null ? downloadUrl.toString() : null)) {
-                        DatabaseReference container = userProfile.child(authResult.getUser().getUid());
-                        profile = new Profile();
-                        profile.setImageUrl(downloadUrl.toString());
-                        profile.setId(authResult.getUser().getUid());
-                        profile.setName(sName);
-                        profile.setEmail(sEmail);
-                        profile.setUserId(sUserId);
-                        profile.setPhone(sPhone);
-                        profile.setMaster(sMaster);
-                        profile.setUserCode(sUserCode);
-                        profile.setSection(sSection);
-                        profile.setType_account(type_account);
-                        container.setValue(profile.addProfile());
+            if (type_account.equalsIgnoreCase("Doctor")) {
+                password = sEmail;
+            } else {
+                password = sUserId;
+            }
+
+
+
+            mAuth.createUserWithEmailAndPassword(sEmail, password).addOnSuccessListener(authResult -> {
+                spotsDialog.show();
+                DatabaseReference container = userProfile.child(authResult.getUser().getUid());
+                profile = new Profile();
+                profile.setName(sName);
+                profile.setEmail(sEmail);
+                profile.setId(authResult.getUser().getUid());
+
+                if (type_account.equalsIgnoreCase("Student")) {
+                    profile.setUserCode(sUserCode);
+                    profile.setUserId(sUserId);
+                }
+
+                profile.setPhone(sPhone);
+                profile.setMaster(sMaster);
+                profile.setSection(sSection);
+                profile.setOnline("true");
+                profile.setType_account(type_account);
+                container.setValue(profile.addProfile()).addOnCompleteListener(task -> {
+                    storeKey.setUser(type_account);
+                    startActivity(new Intent(SignUp.this,
+                            Constants.homeClasses(type_account)));
+                    if (task.isSuccessful()) {
                         if (spotsDialog.isShowing()) {
                             spotsDialog.dismiss();
                         }
+
                     }
-                }).addOnFailureListener(e -> {
-                    if (spotsDialog.isShowing()) {
-                        spotsDialog.dismiss();
-                    }
-                    e.printStackTrace();
                 });
 
-            }).addOnFailureListener(e -> {
-                if (spotsDialog.isShowing()) {
-                    spotsDialog.dismiss();
-                }
-                e.printStackTrace();
+
             });
-
-        } else {
-
-            if (spotsDialog.isShowing()) {
-                spotsDialog.dismiss();
-            }
 
         }
 
@@ -181,21 +183,41 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         sMaster = fMaster.getText().toString();
         sSection = fSection.getText().toString();
 
-        if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sEmail) && !TextUtils.isEmpty(sUserId) && !TextUtils.isEmpty(sUserCode) &&
-                !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
-                !TextUtils.isEmpty(sSection)) {
-            return true;
+        if (!type_account.equalsIgnoreCase("Doctor")) {
+            if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sEmail) &&
+                    !TextUtils.isEmpty(sUserId) && !TextUtils.isEmpty(sUserCode) &&
+                    !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
+                    !TextUtils.isEmpty(sSection)) {
+                return true;
 
-        } else {
-            ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sEmail, sUserId, sUserCode, sPhone, sMaster, sSection}
-                    , new String[]{"Name", "Email", "UserId", "UserCode", "Phone", "Master", "Section"});
-            msg = new StringBuilder();
-            for (int i = 0; i < arr.size(); i++) {
-                msg.append(arr.get(i)).append(" Is Empty Field\n");
+            } else {
+                ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sEmail, sUserId, sUserCode, sPhone, sMaster, sSection}
+                        , new String[]{"Name", "Email", "UserId", "UserCode", "Phone", "Master", "Section"});
+                msg = new StringBuilder();
+                for (int i = 0; i < arr.size(); i++) {
+                    msg.append(arr.get(i)).append(" Is Empty Field\n");
+                }
+                Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+
             }
-            Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+        } else {
+            if (!TextUtils.isEmpty(sName) && !TextUtils.isEmpty(sEmail) &&
+                    !TextUtils.isEmpty(sPhone) && !TextUtils.isEmpty(sMaster) &&
+                    !TextUtils.isEmpty(sSection)) {
+                return true;
 
+            } else {
+                ArrayList arr = Constants.getStringsEmpty(new String[]{sName, sEmail, sPhone, sMaster, sSection}
+                        , new String[]{"Name", "Email", "Phone", "Master", "Section"});
+                msg = new StringBuilder();
+                for (int i = 0; i < arr.size(); i++) {
+                    msg.append(arr.get(i)).append(" Is Empty Field\n");
+                }
+                Constants.customDialogAlter(this, R.layout.custom_dialog2, "Please Complete Fields \n\n" + msg.toString());
+
+            }
         }
+
         return false;
     }
 
@@ -264,42 +286,10 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                 selectList(SignUp.this, new String[]{"English", "Arabic"});
                 break;
             case R.id.btn_register:
-                spotsDialog.show();
                 createAccount();
                 break;
-            case R.id.selectImage:
-                Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
-                gallery.setType("image/*");
-                startActivityForResult(gallery, GALLERY_REQUEST);
-                break;
+
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == GALLERY_REQUEST && resultCode == RESULT_OK) {
-            Uri imageUri = data.getData();
-            if (imageUri != null) {
-                CropImage.activity(imageUri)
-                        .setGuidelines(CropImageView.Guidelines.ON)
-                        .setAspectRatio(1, 1)
-                        .start(SignUp.this);
-            }
-        }
-
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
-                resultUri = result.getUri();
-                selectImage.setImageURI(resultUri);
-                editPhoto = true;
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
-                Log.e("Error Activity Crop", error.getMessage());
-            }
-        }
-
-
-    }
 }

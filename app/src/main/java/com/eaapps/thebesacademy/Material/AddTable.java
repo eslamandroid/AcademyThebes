@@ -18,7 +18,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-import com.eaapps.thebesacademy.Activities.Home;
+import com.eaapps.thebesacademy.Admin.AdminHome;
 import com.eaapps.thebesacademy.R;
 import com.eaapps.thebesacademy.Utils.Constants;
 import com.eaapps.thebesacademy.Utils.RetrieveData;
@@ -149,33 +149,49 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
         btnAdd.setOnClickListener(v -> {
 
             DatabaseReference data = ref.child("Tables").child(typeTable).child(master).child(level);
-            modelTableRetrieveData.haveChild(FirebaseModelTables.class, data, semester, (has, object) -> {
 
-                if (has && !isEditTable) {
-                    final Dialog dialog = new Dialog(AddTable.this);
-                    Constants.customDialogAlter(AddTable.this, dialog, R.layout.custom_dialog, "This table already exists Do you want to edit", "Edit Table", new Constants.ClickButton() {
-                        @Override
-                        public void clickAction() {
-                            isEditTable = true;
-                            dialog.dismiss();
-                            modelTableRetrieveData.RetrieveSingleTimes(FirebaseModelTables.class, data.child(semester), objects -> {
-                                List<ModelTable> modelTable = objects.getTablesDetails();
-                                for (ModelTable modelTables : modelTable) {
-                                    modelTableList.add(modelTables);
-                                    adapterTable.notifyDataSetChanged();
-                                }
+            modelTableRetrieveData.haveChild(data, semester, new RetrieveData.CallHaveChild() {
+                @Override
+                public void hasChild(boolean has) {
+                    if (has && !isEditTable) {
+                        final Dialog dialog = new Dialog(AddTable.this);
+                        Constants.customDialogAlter(AddTable.this, dialog, R.layout.custom_dialog, "This table already exists Do you want to edit", "Edit Table", new Constants.ClickButton() {
+                            @Override
+                            public void clickAction() {
+                                isEditTable = true;
+                                dialog.dismiss();
+                                modelTableRetrieveData.RetrieveSingleTimes(FirebaseModelTables.class, data.child(semester), new RetrieveData.CallBackRetrieveTimes<FirebaseModelTables>() {
+                                    @Override
+                                    public void onData(FirebaseModelTables objects) {
+                                        List<ModelTable> modelTable = objects.getTablesDetails();
+                                        for (ModelTable modelTables : modelTable) {
+                                            modelTableList.add(modelTables);
+                                            adapterTable.notifyDataSetChanged();
+                                        }
+                                    }
 
-                            });
+                                    @Override
+                                    public void hasChildren(boolean c) {
+
+                                    }
+
+                                    @Override
+                                    public void exits(boolean e) {
+
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        if (hasEmpty()) {
+                            modelTableList.add(new ModelTable(material, nameDoctor, f + " : " + t, day));
+                            adapterTable.notifyDataSetChanged();
                         }
-                    });
-
-                } else {
-                    if (hasEmpty()) {
-                        modelTableList.add(new ModelTable(material, nameDoctor, f + " : " + t, day));
-                        adapterTable.notifyDataSetChanged();
                     }
                 }
             });
+
 
         });
 
@@ -188,7 +204,7 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
         toolbar.inflateMenu(R.menu.menu_add_material);
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(AddTable.this, Home.class));
+            startActivity(new Intent(AddTable.this, AdminHome.class));
         });
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.btn_add) {
@@ -237,15 +253,35 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
     private void getMaterial(String sections) {
         spotsDialog.show();
         materials.clear();
-        modelMaterialsRetrieveData.RetrieveSingleTimesRepeat(ModelMaterials.class, ref.child("Materials").child(sections), objects -> {
-            if (objects != null) {
-                materials.add(objects.getText());
-                aMaterial.notifyDataSetChanged();
-                spotsDialog.dismiss();
-            } else {
-                spotsDialog.dismiss();
+
+        modelMaterialsRetrieveData.RetrieveSingleTimesRepeat(ModelMaterials.class, ref.child("Materials").child(sections), new RetrieveData.CallBackRetrieveTimes<ModelMaterials>() {
+            @Override
+            public void onData(ModelMaterials objects) {
+                if (objects != null) {
+                    materials.add(objects.getText());
+                    aMaterial.notifyDataSetChanged();
+                    spotsDialog.dismiss();
+                } else {
+                    spotsDialog.dismiss();
+                }
             }
 
+            @Override
+            public void hasChildren(boolean c) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+                if (!e) {
+                    spotsDialog.dismiss();
+                    Constants.customToast(AddTable.this, "not found any materials");
+                    materials.clear();
+                    aMaterial.notifyDataSetChanged();
+
+                }
+
+            }
         });
     }
 
@@ -253,8 +289,9 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
 
         Query data = ref.child("Tables").child(typeTable).child(master).orderByChild("level").equalTo(level);
         modelTableRetrieveData.RetrieveList(FirebaseModelTables.class, data, new RetrieveData.CallBackRetrieveList<FirebaseModelTables>() {
+
             @Override
-            public void onDataList(List<FirebaseModelTables> object, String key) {
+            public void onDataList(List<FirebaseModelTables> object, int countChild) {
                 FirebaseModelTables firebaseModelTables = object.get(0);
                 if (firebaseModelTables != null) {
                     //error
@@ -267,7 +304,6 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
                     modelTableList.clear();
                     adapterTable.notifyDataSetChanged();
                 }
-
             }
 
             @Override
@@ -277,6 +313,19 @@ public class AddTable extends AppCompatActivity implements AdapterView.OnItemSel
 
             @Override
             public void onRemoveFromList(int removePosition) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+                if (!e) {
+                    spotsDialog.dismiss();
+                    Constants.customToast(AddTable.this, "not found any tables");
+                }
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
 
             }
         });

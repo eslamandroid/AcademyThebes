@@ -1,11 +1,13 @@
 package com.eaapps.thebesacademy.Student;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -30,6 +32,7 @@ import com.google.firebase.database.Query;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -69,12 +72,12 @@ public class Attendance extends AppCompatActivity {
         ref = FirebaseDatabase.getInstance().getReference();
         retrieveData = new RetrieveData<FirebaseModelTables>(Attendance.this) {
         };
-
-        Query query = ref.child("Tables").child("Lecture").child("Computer Science").orderByChild("level").equalTo("4");
+        Query query = ref.child("Tables").child("Lecture").child(profile.getMaster()).orderByChild("level").equalTo(profile.getLevel());
 
         retrieveData.RetrieveList(FirebaseModelTables.class, query, new RetrieveData.CallBackRetrieveList<FirebaseModelTables>() {
+
             @Override
-            public void onDataList(List<FirebaseModelTables> object, String key) {
+            public void onDataList(List<FirebaseModelTables> object, int countChild) {
                 FirebaseModelTables firebaseModelTables = object.get(0);
                 if (firebaseModelTables != null) {
                     for (ModelTable m : firebaseModelTables.getTablesDetails()) {
@@ -98,6 +101,16 @@ public class Attendance extends AppCompatActivity {
             public void onRemoveFromList(int removePosition) {
 
             }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
+
+            }
         });
 
         cameraPreview = findViewById(R.id.cameraPreview);
@@ -117,10 +130,18 @@ public class Attendance extends AppCompatActivity {
         cameraPreview.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    //Request permission
-                    ActivityCompat.requestPermissions(Attendance.this,
-                            new String[]{android.Manifest.permission.CAMERA}, RequestCameraPermissionID);
+
+                if (ActivityCompat.checkSelfPermission(Attendance.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+
+                    ActivityCompat.requestPermissions(Attendance.this, new String[]{android.Manifest.permission.CAMERA},
+                            50);
                     return;
                 }
                 try {
@@ -128,6 +149,8 @@ public class Attendance extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+
             }
 
             @Override
@@ -149,6 +172,17 @@ public class Attendance extends AppCompatActivity {
 
             }
 
+            public boolean isValidDate(String inDate) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                dateFormat.setLenient(false);
+                try {
+                    dateFormat.parse(inDate.trim());
+                } catch (ParseException pe) {
+                    return false;
+                }
+                return true;
+            }
+
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
                 final SparseArray<Barcode> qrcodes = detections.getDetectedItems();
@@ -158,17 +192,22 @@ public class Attendance extends AppCompatActivity {
                         Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
                         assert vibrator != null;
                         vibrator.vibrate(1000);
-                        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                        DatabaseReference data = refAttendance.child("Computer Science").child(material).child(profile.getId());
-                        data.child("name_student").setValue(profile.getName());
-                        data.child("name_doctor").setValue(nameDoctor);
-                        data.child("id").setValue(profile.getId());
-                        DatabaseReference dateSign = data.child("dateAttendance").child(qrcodes.valueAt(0).displayValue);
-                        dateSign.child("id").setValue(qrcodes.valueAt(0).displayValue);
-                        dateSign.child("timestamp").setValue(timestamp.getTime());
-                        txtResult.setText("Attendance were successful \n can you continue lecture :)");
 
+                        if (isValidDate(qrcodes.valueAt(0).displayValue)) {
+                            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                            DatabaseReference data = refAttendance.child(profile.getMaster()).child(material).child(profile.getId());
+                            data.child("name_student").setValue(profile.getName());
+                            data.child("name_doctor").setValue(nameDoctor);
+                            data.child("id").setValue(profile.getId());
+                            DatabaseReference dateSign = data.child("dateAttendance").child(qrcodes.valueAt(0).displayValue);
+                            dateSign.child("id").setValue(qrcodes.valueAt(0).displayValue);
+                            dateSign.child("timestamp").setValue(timestamp.getTime());
+                            txtResult.setText("Attendance were successful \n can you continue lecture :)");
 
+                        } else {
+                            txtResult.setText("Please Try Again Because QR Code Wrong :(");
+
+                        }
                     });
                 }
             }
@@ -231,6 +270,25 @@ public class Attendance extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> {
             startActivity(new Intent(Attendance.this, StudentHome.class));
         });
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 50:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Start your camera handling here
+                    try {
+                        cameraSource.start(cameraPreview.getHolder());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Constants.customToast(Attendance.this, "Please allow the permission So the app works successfully");
+                }
+        }
     }
 
     @Override

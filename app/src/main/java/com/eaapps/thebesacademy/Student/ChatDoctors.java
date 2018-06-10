@@ -79,6 +79,7 @@ public class ChatDoctors extends AppCompatActivity {
                 itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(ChatDoctors.this, ChatViewActivity.class);
                     intent.putExtra(Constants.PROFILE, profile);
+                    intent.putExtra("key","chatDoctors");
                     startActivity(intent);
                 });
 
@@ -92,17 +93,19 @@ public class ChatDoctors extends AppCompatActivity {
 
         recycleDoctors.setAdapter(adapter);
 
-        profileRetrieveData.RetrieveList(Profile.class, ref.child("Profile").orderByChild("type_account").equalTo("Doctor"), new RetrieveData.CallBackRetrieveList<Profile>() {
-            @Override
-            public void onDataList(List<Profile> object, String key) {
-                Profile profile = object.get(0);
-                if (profile != null) {
-                    itemUsers.add(profile);
-                    adapter.notifyDataSetChanged();
-                }
-            }
+        profileRetrieveData.RetrieveList(Profile.class, ref.child("Profile").orderByChild("type_account").equalTo("Doctor"),
+                new RetrieveData.CallBackRetrieveList<Profile>() {
 
-            @Override
+                    @Override
+                    public void onDataList(List<Profile> object, int countChild) {
+                        Profile profile = object.get(0);
+                        if (profile != null) {
+                            itemUsers.add(profile);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
             public void onChangeList(List<Profile> object, int position) {
 
             }
@@ -111,7 +114,19 @@ public class ChatDoctors extends AppCompatActivity {
             public void onRemoveFromList(int removePosition) {
 
             }
-        });
+
+                    @Override
+                    public void exits(boolean e) {
+
+                    }
+
+                    @Override
+                    public void hasChildren(boolean c) {
+
+                    }
+                });
+
+
     }
 
     private void initToolbar() {

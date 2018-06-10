@@ -3,6 +3,8 @@ package com.eaapps.thebesacademy.Utils;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,7 +36,7 @@ public class Constants {
     public static final String MASTER = "master";
     public static final String TYPE_FILE = "type_file";
     public static final String UID = "uid";
-
+    public static final String TYPE = "type";
 
 
     public static ArrayList<String> getEmptyField(Activity activity, EditText... id) {
@@ -61,10 +63,9 @@ public class Constants {
 
         if (user.equalsIgnoreCase("Admin")) {
             return AdminHome.class;
-
         } else if (user.equalsIgnoreCase("Student")) {
             return StudentHome.class;
-        } else if (user.equalsIgnoreCase("Teacher")) {
+        } else if (user.equalsIgnoreCase("Doctor")) {
             return HomeTeacher.class;
 
         }
@@ -126,6 +127,17 @@ public class Constants {
         });
 
         dialog.show();
+    }
+
+    public static boolean CheckInternet(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+            if (info != null && info.isConnected()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public interface ClickButton {

@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.eaapps.thebesacademy.Admin.AdminHome;
 import com.eaapps.thebesacademy.Material.FirebaseModelTables;
 import com.eaapps.thebesacademy.Material.ModelTable;
 import com.eaapps.thebesacademy.R;
@@ -40,8 +41,9 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
     RetrieveData<FirebaseModelTables> modelTableRetrieveData;
     List<ModelTable> modelTableList = new ArrayList<>();
     DatabaseReference ref;
-    Bundle bundle;
     RecyclerView.Adapter adapter;
+    Bundle bundle;
+    String key;
 
 
     @Override
@@ -51,6 +53,10 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
 
         bundle = getIntent().getExtras();
         master = bundle != null ? bundle.getString(Constants.MASTER) : null;
+        if (bundle != null) {
+            key = bundle.getString("key");
+        }
+
 
         initToolbar();
 
@@ -122,8 +128,9 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
 
         Query data = ref.child("Tables").child(type).child(master).orderByChild("level").equalTo(level);
         modelTableRetrieveData.RetrieveList(FirebaseModelTables.class, data, new RetrieveData.CallBackRetrieveList<FirebaseModelTables>() {
+
             @Override
-            public void onDataList(List<FirebaseModelTables> object, String key) {
+            public void onDataList(List<FirebaseModelTables> object, int countChild) {
                 FirebaseModelTables firebaseModelTables = object.get(0);
                 if (firebaseModelTables != null) {
                     if (firebaseModelTables.getSemester().equalsIgnoreCase(semester)) {
@@ -134,7 +141,6 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
                 } else {
                     modelTableList.clear();
                 }
-
             }
 
             @Override
@@ -144,6 +150,16 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onRemoveFromList(int removePosition) {
+
+            }
+
+            @Override
+            public void exits(boolean e) {
+
+            }
+
+            @Override
+            public void hasChildren(boolean c) {
 
             }
         });
@@ -187,7 +203,12 @@ public class ThebesTables extends AppCompatActivity implements AdapterView.OnIte
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.btn_back);
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(ThebesTables.this, StudentHome.class));
+            if(key.equalsIgnoreCase("admin")){
+                startActivity(new Intent(ThebesTables.this, AdminHome.class));
+
+            }else {
+                startActivity(new Intent(ThebesTables.this, StudentHome.class));
+            }
 
         });
     }

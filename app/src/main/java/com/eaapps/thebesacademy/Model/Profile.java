@@ -54,7 +54,6 @@ public class Profile implements Parcelable {
     private String userCode;
 
 
-
     public Profile() {
     }
 
@@ -87,7 +86,7 @@ public class Profile implements Parcelable {
         type_account = in.readString();
         level = in.readString();
         semester = in.readString();
-        userCode=in.readString();
+        userCode = in.readString();
     }
 
     public String getId() {
@@ -196,19 +195,16 @@ public class Profile implements Parcelable {
 
     public Map<String, Object> addProfile() {
         Map<String, Object> profile = new HashMap<>();
-        if (getImageUrl() != null && id != null && name != null && email != null && userId != null && phone != null && master != null && section != null) {
-            profile.put(URL, this.getImageUrl());
-            profile.put(ID, this.id);
-            profile.put(NAME, this.name);
-            profile.put(EMAIL, this.email);
-            profile.put(USERID, this.userId);
-            profile.put(PHONE, this.phone);
-            profile.put(MASTER, this.master);
-            profile.put(SECTION, this.section);
-            profile.put(ONLINE, this.online);
-            profile.put(TYPE_ACCOUNT, this.type_account);
-            profile.put(USERCODE,userCode);
-        }
+        profile.put(ID, this.id);
+        profile.put(NAME, this.name);
+        profile.put(EMAIL, this.email);
+        profile.put(USERID, this.userId);
+        profile.put(PHONE, this.phone);
+        profile.put(MASTER, this.master);
+        profile.put(SECTION, this.section);
+        profile.put(ONLINE, this.online);
+        profile.put(TYPE_ACCOUNT, this.type_account);
+        profile.put(USERCODE, userCode);
 
 
         return profile;

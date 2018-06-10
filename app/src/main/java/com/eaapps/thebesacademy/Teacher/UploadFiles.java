@@ -39,7 +39,7 @@ public class UploadFiles extends AppCompatActivity implements View.OnClickListen
     TextView nameFile, titleSize, titlePresent;
     EditText editChapter, editDescription;
     Spinner spinner, spinnerLevel, spinnerType;
-    String[] typeFile = {".pdf", ".xls", ".png", ".jpg", ".mp4", ".mp3", ".doc", ".zip", ".rar"};
+    String[] typeFile = {".pdf", ".xls", ".jpg", ".doc", ".zip", ".png"};
     String[] sectionArr = {"Computer Science", "Information Systems", "Accounting", "Business Administration"};
     String[] levelArr = {"1", "2", "3", "4"};
 
@@ -100,7 +100,7 @@ public class UploadFiles extends AppCompatActivity implements View.OnClickListen
         pauseUpload.setOnClickListener(this);
 
         storageReference = FirebaseStorage.getInstance().getReference().child("Subjects");
-        data = FirebaseDatabase.getInstance().getReference().child("Files").child(uid);
+        data = FirebaseDatabase.getInstance().getReference();
 
 
     }
@@ -176,9 +176,7 @@ public class UploadFiles extends AppCompatActivity implements View.OnClickListen
         Uri file = Uri.fromFile(new File(String.valueOf(FilePathUri)));
         storageTask = storageReference.child(System.currentTimeMillis() + fType).putFile(file).addOnCompleteListener(task -> {
             String url = task.getResult().getDownloadUrl().toString();
-
-
-            DatabaseReference d = data.push();
+            DatabaseReference d = data.child("Files").child(fsection).child(uid).push();
             Files files = new Files();
             files.setDescription(editDescription.getText().toString());
             files.setTitle(editChapter.getText().toString());
@@ -205,6 +203,11 @@ public class UploadFiles extends AppCompatActivity implements View.OnClickListen
             titleSize.setText(size);
             nameFile.setText(System.currentTimeMillis() + fType);
             titlePresent.setText((int) progress + "%");
+            if ((int) progress == 100) {
+                progressBar.setProgress(0);
+                Constants.customToast(UploadFiles.this, "Finished Upload");
+            }
+
 
         });
 
